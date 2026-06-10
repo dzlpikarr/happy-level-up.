@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Happy Birthday Vhraa 🎉</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(to bottom, #d988b4, #c86b9e);
+            --pink-light: #f5cde2;
+            --pink-dark: #b65287;
+            --text-dark: #333;
+            --white: #ffffff;
+            --frame-border-gradient: linear-gradient(135deg, #e38cb9, #ffffff, #d6bbf2);
+
+            /* ==================================================================
+               👉 ATUR POSISI NAIK TURUN VIDEO DI SINI YA BRO!
+               Tinggal ganti angkanya (misal: -30px, -50px, atau -10px) sampai pas.
+               ================================================================== */
+            --posisi-naik-turun-video: 0px; 
+            
+            --posisi-naik-turun-frame: 0px; /* Jarak tumpukan frame foto tengah di bawah kalender */
+            --ukuran-tombol-play-pause: 70px;  
+            --ukuran-icon-play-pause: 2rem;    
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #111; 
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Mobile Frame Container */
+        #app-container {
+            position: relative;
+            width: 100%;
+            max-width: 414px; 
+            height: 100vh;
+            max-height: 899px;
+            background: var(--bg-gradient);
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+            scroll-behavior: smooth;
+        }
+
+        #app-container::-webkit-scrollbar { display: none; }
+
+        /* ==================== KEYFRAMES ANIMASI KHUSUS TAMPILAN KEDUA ==================== */
+        @keyframes slideFromTop {
+            from { opacity: 0; transform: translateY(-40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideFromLeft {
+            from { opacity: 0; transform: translateX(-40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideFromRight {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideFromBottom {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ==================== TAMPILAN 1: ACCESS PIN LOCK (POLOS INSTAN) ==================== */
+        #pin-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(20, 15, 20, 0.88);
+            backdrop-filter: blur(15px);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            color: var(--white);
+        }
+
+        .pin-title { font-size: 2rem; font-weight: 600; margin-top: 20px; color: #ebbce4; text-shadow: 0 0 15px rgba(235, 188, 228, 0.6); }
+        .pin-desc { font-size: 0.85rem; text-align: center; margin-top: 15px; color: #d1b8c8; line-height: 1.5; max-width: 90%; }
+        .dots-container { display: flex; gap: 15px; margin: 40px 0; }
+        .dot { width: 15px; height: 15px; border-radius: 50%; background: rgba(255, 255, 255, 0.25); transition: background 0.2s; }
+        .dot.active { background: var(--white); box-shadow: 0 0 10px #fff; }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px 30px; margin-top: 20px; }
+        .key { width: 70px; height: 70px; border-radius: 50%; background: rgba(255, 255, 255, 0.12); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; cursor: pointer; transition: background 0.1s; }
+        .key:active { background: rgba(255, 255, 255, 0.3); }
+        .error-msg { color: #ff6b6b; margin-top: 25px; font-size: 0.9rem; opacity: 0; transition: opacity 0.3s; }
+
+        /* ==================== TAMPILAN 2: HALAMAN SAMBUTAN (ANIMASI TEKS) ==================== */
+        #photo-welcome-screen {
+            padding: 40px 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        #photo-welcome-screen.active-view .tx-title {
+            animation: slideFromTop 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        #photo-welcome-screen.active-view .tx-sub {
+            animation: slideFromLeft 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.15s forwards;
+            opacity: 0;
+        }
+        #photo-welcome-screen.active-view .tx-dots {
+            animation: slideFromRight 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.25s forwards;
+            opacity: 0;
+        }
+        #photo-welcome-screen.active-view .polaroid-welcome-trigger {
+            animation: slideFromBottom 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.35s forwards;
+            opacity: 0;
+        }
+        #photo-welcome-screen.active-view .gradient-btn-trigger {
+            animation: slideFromBottom 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.45s forwards;
+            opacity: 0;
+        }
+
+        .welcome-meta-text { text-align: center; color: white; margin-bottom: 25px; width: 100%; }
+        .welcome-meta-text .tx-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 600; line-height: 1.2; letter-spacing: 0.5px; }
+        .welcome-meta-text .tx-sub { font-size: 0.85rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-top: 25px; }
+        .welcome-meta-text .tx-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+        .welcome-meta-text .tx-dots span { width: 8px; height: 8px; background: rgba(255, 255, 255, 0.6); border-radius: 50%; }
+
+        .gradient-btn-trigger {
+            margin-top: 30px; padding: 2.5px; border-radius: 25px; background: var(--frame-border-gradient);
+            display: inline-block; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.15); width: 100%; max-width: 280px; text-align: center;
+        }
+        .gradient-btn-inner { background: #c86b9e; color: white; padding: 10px 20px; border-radius: 22px; font-size: 0.95rem; font-weight: 600; }
+
+        /* ==================== TAMPILAN 3: BERANDA HALAMAN UTAMA (INSTAN) ==================== */
+        #main-content { padding: 40px 20px; display: none; }
+
+        .header-titles { text-align: center; color: var(--white); margin-bottom: 50px; }
+        .header-titles h1 { font-family: 'Playfair Display', serif; font-size: 2rem; line-height: 1.3; letter-spacing: 1px; }
+
+        /* Base Polaroid Frame Murni */
+        .polaroid {
+            background: var(--white);
+            padding: 12px 12px 24px 12px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            margin-bottom: 50px; 
+            position: relative;
+            border: 3px solid transparent;
+            background-image: linear-gradient(white, white), var(--frame-border-gradient);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            display: block;
+        }
+
+        /* KUNCI KEMIRINGAN PATEN */
+        .f-straight { transform: rotate(0deg); } 
+        .f-tilt-left { transform: rotate(-4deg) !important; } 
+        .f-tilt-right { transform: rotate(4deg) !important; } 
+
+        /* Letak posisi tumpukan foto tengah miring kiri */
+        .frame-middle { 
+            margin-top: var(--posisi-naik-turun-frame) !important; 
+            margin-bottom: 0px !important; 
+        }
+
+        /* Letak posisi khusus untuk naik turun frame video miring kanan */
+        .frame-video-container {
+            margin-top: var(--posisi-naik-turun-video) !important; 
+            margin-bottom: 20px !important;
+            z-index: 5 !important; 
+        }
+
+        .polaroid img, .polaroid video { width: 100%; height: auto; border-radius: 8px; aspect-ratio: 4/3; object-fit: cover; display: block; }
+        .polaroid-top-caption { text-align: center; font-family: 'Playfair Display', serif; color: var(--pink-dark); font-size: 1.1rem; font-weight: 600; margin-top: 16px; }
+
+        .polaroid-split-border-caption { display: flex; justify-content: center; align-items: center; gap: 12px; width: 100%; margin-top: 18px; }
+        .polaroid-split-border-caption span {
+            font-family: 'Arial', bold; font-size: 1.10rem; font-weight: 700; font-style: normal; color: var(--pink-dark); 
+            padding: 5px 15px; background-color: rgba(220, 145, 185, 0.9);
+            border: 0px solid var(--pink-dark); border-radius: 6px; display: inline-block;
+        }
+
+        /* Calendar Card */
+        .calendar-card { background: var(--white); border-radius: 20px; padding: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 15px; position: relative; margin-top: 20px; }
+        .cal-header { background: #f8d3e6; padding: 15px; border-radius: 40px; text-align: center; font-family: 'Playfair Display', serif; color: var(--text-dark); }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 20px; text-align: center; font-size: 0.85rem; }
+        .cal-grid .date.active { border: 2px solid var(--pink-dark); border-radius: 50%; color: var(--pink-dark); font-weight: bold; }
+        .cal-quote { background: #f8d3e6; padding: 15px; border-radius: 10px; text-align: center; margin-top: 20px; font-style: italic; color: var(--pink-dark); }
+        
+        .cal-overlap-container { position: absolute; top: -45px; right: -10px; display: flex; flex-direction: column; align-items: center; transform: rotate(8deg); }
+        .cal-label-birthday { font-family: 'Playfair Display', serif; font-size: 0.75rem; font-weight: 700; color: var(--pink-dark); background: #ffffff; padding: 2px 10px; border: 1.5px solid #e38cb9; border-radius: 4px; margin-bottom: -5px; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-transform: uppercase; }
+        .cal-overlap-img { width: 90px; box-shadow: 0 5px 15px rgba(0,0,0,0.15); border: 4px solid white; border-bottom: 22px solid white; border-radius: 4px; }
+        .cal-age-number { position: absolute; bottom: 2px; font-size: 0.75rem; font-weight: 700; color: var(--pink-dark); background: #ffffff; border: 1px solid var(--pink-light); padding: 0px 6px; border-radius: 3px; }
+
+        /* Pita Dekorasi */
+        .cal-bottom-ribbon { display: flex; justify-content: center; align-items: center; margin-bottom: 45px; color: rgba(255, 255, 255, 0.4); font-size: 1.2rem; position: relative; }
+        .cal-bottom-ribbon::before, .cal-bottom-ribbon::after { content: ''; width: 50px; height: 2px; background: rgba(255, 255, 255, 0.3); display: inline-block; margin: 0 15px; vertical-align: middle; }
+
+        /* ==================== FIX REVISI: TOMBOL IKON BAWAH LEBIH KECIL & SATU BARIS (ANTI TURUN) ==================== */
+        .action-btns { 
+            display: flex; 
+            justify-content: center; 
+            gap: 15px; 
+            margin-top: 25px; 
+            margin-bottom: 50px; 
+            width: 100%;
+            padding: 0 10px;
+        }
+        .btn-link-icon { 
+            background: rgba(255,255,255,0.3); 
+            border: 1px solid rgba(255,255,255,0.4); 
+            padding: 10px 14px; /* Padding dikecilkan biar proporsional */
+            border-radius: 10px; 
+            color: white; 
+            font-size: 0.8rem; /* Font diperkecil sedikit */
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            cursor: pointer; 
+            flex: 1; /* Biar ukurannya seimbang kanan kiri */
+            justify-content: center;
+            white-space: nowrap; /* 👉 FIX UTAMA: Mengunci teks agar lurus satu baris, dilarang melorot ke bawah */
+        }
+        
+        .banner-birthday { background: rgba(255,255,255,0.4); backdrop-filter: blur(5px); text-align: center; padding: 25px; border-radius: 15px; color: white; font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; }
+
+        /* ==================== OVERLAYS LAYER ==================== */
+        .full-page-view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-gradient); z-index: 50; display: none; flex-direction: column; }
+        .back-nav-bar { padding: 25px 20px; display: flex; align-items: center; z-index: 60; }
+        .back-circle-btn { background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.3); color: white; width: 85px; height: 36px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 5px; }
+
+        #spotify-page { background: linear-gradient(to bottom, #503643, #1e131a); color: white; overflow-y: auto; }
+        .spotify-main-body { padding: 0 30px 40px 30px; display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .art-frame { position: relative; width: 100%; aspect-ratio: 1/1; margin-bottom: 35px; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.6)); }
+        .art-frame img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+        .sp-mini-logo { position: absolute; bottom: 12px; right: 12px; background: #1DB954; color: white; width: 38px; height: 38px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.4rem; }
+        .meta-music-left { align-self: flex-start; width: 100%; margin-bottom: 25px; }
+        .dev-badge { font-size: 0.75rem; color: #b3b3b3; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+        .track-name { font-size: 1.6rem; font-weight: 700; }
+        .artist-name { font-size: 1rem; color: #b3b3b3; margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+        .scrubber-container { width: 100%; margin-bottom: 30px; }
+        .track-rail { width: 100%; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; }
+        .track-fill { width: 0%; height: 100%; background: white; border-radius: 2px; }
+        .time-stamps { display: flex; justify-content: space-between; font-size: 0.75rem; color: #b3b3b3; margin-top: 10px; }
+        .deck-controls { display: flex; justify-content: center; align-items: center; gap: 35px; width: 100%; }
+        .deck-controls i { font-size: 1.8rem; cursor: pointer; }
+        .center-trigger-btn { width: 70px; height: 70px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .center-trigger-btn i { font-size: 2rem !important; color: #1e131a !important; }
+
+        #envelope-page { justify-content: flex-start; align-items: center; }
+        .envelope-center-zone { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; max-width: 414px; position: relative; }
+        .envelope-animation-space { position: relative; width: 100%; max-width: 330px; height: 200px; }
+        .envelope-box { position: absolute; bottom: 0; left: 0; width: 100%; height: 190px; background: #faeedb; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); cursor: pointer; }
+        .envelope-top-flap { position: absolute; top: 0; left: 0; width: 0; height: 0; border-left: 165px solid transparent; border-right: 165px solid transparent; border-top: 105px solid #e6d8c3; transform-origin: top; transition: transform 0.4s ease-in-out; z-index: 4; }
+        .envelope-bottom-body { position: absolute; bottom: 0; left: 0; width: 0; height: 0; border-left: 165px solid #faeedb; border-right: 165px solid #faeedb; border-bottom: 95px solid #fdf5e6; z-index: 3; }
+        .envelope-box.open .envelope-top-flap { transform: rotateX(180deg); z-index: 1; }
+
+        .letter-paper {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; max-width: 414px; margin: 0 auto; background: #ffffff; padding: 90px 25px 40px 25px;
+            transform: translateY(100vh); opacity: 0; visibility: hidden; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease; z-index: 10;
+            display: flex; flex-direction: column; justify-content: flex-start; text-align: left; overflow-y: auto;
+        }
+        .envelope-box.open .letter-paper { transform: translateY(0); opacity: 1; visibility: visible; }
+        .close-letter-btn { position: absolute; top: 25px; right: 25px; background: rgba(0,0,0,0.05); border: none; color: #333; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 70; }
+        .letter-paper h3 { font-family: 'Playfair Display', serif; color: var(--pink-dark); font-size: 1.4rem; margin-bottom: 15px; text-align: center; border-bottom: 1px dashed #f2e6d5; padding-bottom: 8px; }
+        .letter-paper p { font-size: 0.9rem; line-height: 1.8; color: #444; text-align: justify; white-space: pre-line; }
+        .purple-wax-seal { position: absolute; top: 75px; left: 50%; transform: translateX(-50%); width: 54px; height: 54px; background: #b5477a; border-radius: 50%; z-index: 5; box-shadow: 0 4px 10px rgba(0,0,0,0.25); display: flex; justify-content: center; align-items: center; color: white; font-size: 1.3rem; }
+        .envelope-box.open .purple-wax-seal { opacity: 0; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        
+        <audio id="core-audio-track" loop>
+            <source src="lagu-romantis.mp3" type="audio/mpeg">
+        </audio>
+
+        <div id="pin-screen">
+            <h1 class="pin-title">Birthday Access</h1>
+            <p class="pin-desc">Masukkan PIN untuk membuka akses. Jika kamu salah memasukkan kata sandi sebanyak 5 kali berturut-turut, akses akan diblokir sementara.<br><br>Pikirkan baik-baik — mungkin password-nya lebih dekat daripada yang kamu kira!</p>
+            <div class="dots-container">
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            </div>
+            <div class="keypad">
+                <div class="key" onclick="typePin('1')">1</div><div class="key" onclick="typePin('2')">2</div><div class="key" onclick="typePin('3')">3</div>
+                <div class="key" onclick="typePin('4')">4</div><div class="key" onclick="typePin('5')">5</div><div class="key" onclick="typePin('6')">6</div>
+                <div class="key" onclick="typePin('7')">7</div><div class="key" onclick="typePin('8')">8</div><div class="key" onclick="typePin('9')">9</div>
+                <div class="key" onclick="erasePin()"><i class="fas fa-arrow-left"></i></div><div class="key" onclick="typePin('0')">0</div><div class="key" onclick="verifyPin()"><i class="fas fa-check"></i></div>
+            </div>
+            <div class="error-msg" id="error-msg">PIN salah 🤣</div>
+        </div>
+
+        <div id="photo-welcome-screen">
+            <div class="welcome-meta-text">
+                <div class="tx-title">Hestina Vhera</div>
+                <div class="tx-sub">HAPPY LEVEL UP <br>MY GIRL</div>
+                <div class="tx-dots">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+
+            <div class="polaroid f-straight polaroid-welcome-trigger" style="width:100%; max-width:340px;">
+                <img src="1.jpg">
+                <div class="polaroid-top-caption">✨ Beautiful Moment ✨</div>
+            </div>
+
+            <div class="gradient-btn-trigger" onclick="goToMainBerandaDirectly()">
+                <div class="gradient-btn-inner">Click untuk melihat kejutan </div>
+            </div>
+        </div>
+
+        <div id="main-content">
+            
+            <div class="header-titles">
+                <h1>    </h1>
+            </div>
+
+            <div class="calendar-card f-straight">
+                <div class="cal-overlap-container">
+                    <span class="cal-label-birthday">BIRTHDAY GIRL</span>
+                    <img src="2.jpg" class="cal-overlap-img">
+                    <span class="cal-age-number">18</span>
+                </div>
+
+                <div class="cal-header"><h2>Juli</h2><p>2026</p></div>
+                <div class="cal-grid">
+                    <div class="day-name">S</div><div class="day-name">S</div><div class="day-name">R</div><div class="day-name">K</div><div class="day-name">J</div><div class="day-name">S</div><div class="day-name">M</div>
+                    <div></div><div></div><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div>
+                    <div>6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div><div>12</div>
+                    <div>13</div><div>14</div><div>15</div><div>16</div><div>17</div><div>18</div><div>19</div>
+                    <div>20</div><div>21</div><div>22</div><div>23</div><div>24</div><div>25</div><div>26</div>
+                    <div class="date active">27</div><div>28</div><div>29</div><div>30</div><div>31</div><div></div><div></div>
+                </div>
+                <div class="cal-quote">If you want it to be,<br>it's meant to be.</div>
+            </div>
+
+            <div class="cal-bottom-ribbon f-straight">
+                <i class="fas fa-ribbon"></i>
+            </div>
+
+            <div class="polaroid f-tilt-left frame-middle">
+                <img src="3.jpg">
+            </div>
+            
+            <div class="polaroid f-tilt-right frame-video-container">
+                <video id="polaroid-custom-video" loop muted playsinline>
+                    <source src="video.mp4" type="video/mp4">
+                </video>
+                <div class="polaroid-split-border-caption">
+                    <span>i kind of</span>
+                    <span>sort of</span>
+                    <span>really</span>
+                </div>
+            </div>
+
+            <div class="action-btns f-straight">
+                <button class="btn-link-icon" onclick="switchPage('spotify-page')"><i class="fas fa-music"></i> Spotify Music</button>
+                <button class="btn-link-icon" onclick="switchPage('envelope-page')"><i class="fas fa-envelope"></i> Open Card</button>
+            </div>
+
+            <div class="banner-birthday f-straight">Happy Birthday<br>For u❤️</div>
+        </div>
+
+        <div id="spotify-page" class="full-page-view">
+            <div class="back-nav-bar"><button class="back-circle-btn" onclick="exitPage('spotify-page')"><i class="fas fa-chevron-left"></i> Back</button></div>
+            <div class="spotify-main-body">
+                <div class="art-frame">
+                    <img src="4.jpg">
+                    <div class="sp-mini-logo"><i class="fab fa-spotify"></i></div>
+                </div>
+                <div class="meta-music-left">
+                  <div class="dev-badge"><i class="fas fa-mobile-alt"></i> iPhone</div>
+                    <div class="track-name">Monokrom</div>
+                    <div class="artist-name">tulus</div>
+                </div>
+                <div class="scrubber-container">
+                    <div class="track-rail"><div class="track-fill" id="track-progress"></div></div>
+                    <div class="time-stamps"><span id="stamp-now">0:00</span><span id="stamp-total">3:15</span></div>
+                </div>
+                <div class="deck-controls">
+                    <i class="fas fa-backward-step"></i>
+                    <div class="center-trigger-btn" onclick="togglePlayback()"><i class="fas fa-pause" id="deck-play-icon"></i></div>
+                    <i class="fas fa-forward-step"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="envelope-page" class="full-page-view">
+            <div class="back-nav-bar"><button class="back-circle-btn" onclick="exitPage('envelope-page')"><i class="fas fa-chevron-left"></i> Back</button></div>
+            <div class="envelope-center-zone">
+                <div class="envelope-animation-space">
+                    <div class="envelope-box" onclick="this.classList.toggle('open')">
+                        <div class="envelope-top-flap"></div>
+                        <div class="envelope-bottom-body"></div>
+                        
+                        <div class="letter-paper" onclick="event.stopPropagation();">
+                            <button class="close-letter-btn" onclick="closeLetterOverlay()"><i class="fas fa-times"></i></button>
+                            <h3>Dear Vhraa ✨</h3>
+                            <p>Selamat ulang tahun yang luar biasa untuk salah satu orang paling berharga di hidupku. Di hari spesialmu ini, aku cuma ingin meluangkan waktu untuk mengungkapkan betapa bersyukurnya aku atas kehadiranmu.
+
+                            Terima kasih karena selalu ada, membawa tawa yang tulus, dan menjadi pendengar terbaik di setiap waktu random-ku. Keberadaanmu selalu berhasil membuat hari-hari yang biasa saja terasa jauh lebih bermakna.
+
+                            Semoga di lembaran usiamu yang baru ini, langkahmu selalu dituntun menuju kebahagiaan. Kuberdoa agar kamu selalu diberikan kesehatan, kedamaian hati, dan kekuatan untuk meraih semua impian besar yang sedang kamu rancang. Jangan pernah ragu pada kemampuan dirimu ya, karena kamu jauh lebih hebat dari yang kamu bayangkan.
+
+                            Apapun yang terjadi di masa depan, mari tetap saling mendukung dan merangkai cerita indah bersama. Selamat merayakan hari kelahiranmu, Nayla! 
+
+                            With all my best wishes,
+                            Seseorang yang selalu mengagumimu ❤️</p>
+                        </div>
+                        <div class="purple-wax-seal"><i class="fas fa-heart"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const TARGET_SECRET = "270708"; 
+        let currentInput = "";
+        const indicatorDots = document.querySelectorAll('.dot');
+        const alertMsg = document.getElementById('error-msg');
+
+        function refreshDots() { indicatorDots.forEach((dot, idx) => dot.classList.toggle('active', idx < currentInput.length)); }
+        function typePin(digit) { if (currentInput.length < 6) { currentInput += digit; refreshDots(); if (currentInput.length === 6) setTimeout(verifyPin, 150); } }
+        function erasePin() { if (currentInput.length > 0) { currentInput = currentInput.slice(0, -1); refreshDots(); } }
+
+        function verifyPin() {
+            if (currentInput === TARGET_SECRET) {
+                document.getElementById('pin-screen').style.display = 'none';
+                
+                // Pemicu animasi di tampilan kedua
+                const welcomeView = document.getElementById('photo-welcome-screen');
+                welcomeView.style.display = 'flex'; 
+                setTimeout(() => { welcomeView.classList.add('active-view'); }, 50);
+                
+                autoPlayMusicOnUnlock();
+            } else {
+                alertMsg.style.opacity = '1'; currentInput = ""; refreshDots();
+                setTimeout(() => alertMsg.style.opacity = '0', 1000);
+            }
+        }
+
+        function goToMainBerandaDirectly() {
+            document.getElementById('photo-welcome-screen').style.display = 'none';
+            const mainBodyNode = document.getElementById('main-content');
+            mainBodyNode.style.display = 'block';
+            
+            const polaroidVideo = document.getElementById('polaroid-custom-video');
+            if (polaroidVideo) {
+                polaroidVideo.play().catch(function(e) { console.log("Autoplay video ditangguhkan browser: ", e); });
+            }
+        }
+
+        function switchPage(pageId) { document.getElementById('main-content').style.display = 'none'; document.getElementById(pageId).style.display = 'flex'; }
+        function exitPage(pageId) { 
+            document.getElementById(pageId).style.display = 'none'; 
+            document.getElementById('main-content').style.display = 'block'; 
+        }
+        function closeLetterOverlay() { document.querySelector('.envelope-box').classList.remove('open'); }
+
+        /* AUDIO SYSTEM */
+        const trackElement = document.getElementById('core-audio-track');
+        const playIconNode = document.getElementById('deck-play-icon');
+        const progressFillNode = document.getElementById('track-progress');
+        const currentStampNode = document.getElementById('stamp-now');
+        let audioStateActive = false;
+
+        function autoPlayMusicOnUnlock() { trackElement.play().then(() => { audioStateActive = true; playIconNode.className = "fas fa-pause"; }).catch(() => {}); }
+        function togglePlayback() {
+            if (audioStateActive) { trackElement.pause(); playIconNode.className = "fas fa-play"; audioStateActive = false; } 
+            else { trackElement.play().then(() => { playIconNode.className = "fas fa-pause"; audioStateActive = true; }); }
+        }
+        trackElement.addEventListener('timeupdate', () => {
+            if(trackElement.duration) {
+                const percentage = (trackElement.currentTime / trackElement.duration) * 100;
+                progressFillNode.style.width = percentage + "%";
+                let m = Math.floor(trackElement.currentTime / 60), s = Math.floor(trackElement.currentTime % 60);
+                currentStampNode.innerText = m + ":" + (s < 10 ? "0" + s : s);
+            }
+        });
+    </script>
+</body>
+</html>
